@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+    <h1>Async Clipboard API WriteText/ReadText Demo</h1>
+
+    <section>
+      <button id="copy"><strong>Copy</strong><br><em>(write to clipboard)</em></button>
+      <button id="paste"><strong>Paste</strong><br><em>(read from clipboard)</em></button>
+    </section>
+
+    <textarea id="out" placeholder="Text to copy"></textarea>
+    <div id="editBox" contenteditable="true">Some text
+    </div>
+
+    <h3>Permissions:</h3>
+
+    <section id="permbuttons"><button title="Click to request permission" data-state="denied">read</button><button title="Click to request permission" data-state="granted">write</button></section>
+
+    <div id="toast" class="" hidden="">Failed to read clipboard</div>
+</body>
+<script>
+            // document.addEventListener('copy', function(e) {
+        //     e.clipboardData.setData('text/html', '<script><b>hello world');
+        //     e.preventDefault();
+        // });
+        document.addEventListener('paste', function(e) {
+            // if (e.clipboardData.types.indexOf('text/html') > -1) {
+            //     var oldData = e.clipboardData.getData('text/html');
+            //     log(oldData);
+            // }
+            let data = e.clipboardData.files
+            for (file in data) {
+                let img = document.createElement("img");
+                img.setAttribute("src", URL.createObjectURL(data[file]));
+                document.body.append(img);
+            }
+        });
+        /** Write contents of the textarea to the clipboard when clicking "Copy" */
+        copy.onclick = async () => {
+            try {
+                //await navigator.clipboard.writeText(out.value);
+                const text = new Blob(['this is an image'], {type: 'text/plain'});
+                //const svg_with_script = `<svg> <script>const a = 5;</scr' + 'ipt><a href="javascript:alert(2)"> test </a> </svg>`;
+                //const svg_blob = new Blob([svg_with_script], {type: 'image/svg+xml'});
+                const html_text = new Blob(['<p style=\'color: red; font-style: oblique;\'>This text was copied using </p>'], {type: 'text/html'});
+                navigator.clipboard.write([
+                new ClipboardItem({
+                    "text/plain": text,
+                    "text/html": html_text,
+                }),
+            ]);
+              //log('Text copied.');
+          } catch(e) {
+              log(e);
+          }
+        };
+        
+        /** Read from clipboard when clicking the Paste button */
+        paste.onclick = async () => {
+            try {
+              out.value = await navigator.clipboard.readText();
+            log('Text pasted.');
+          } catch(e) {
+              log('Failed to read clipboard');
+          }
+        };
+        
+        /** Watch for pastes */
+        navigator.clipboard.addEventListener('clipboardchange', e => {
+            navigator.clipboard.getText().then( text => {
+                log('Updated clipboard contents: '+text)
+            })
+        });
+        
+        /** The 4 available permissions for Async Clipboard API: */
+        // const PERMISSIONS = [
+        //     { name: "clipboard-read" },
+        //   { name: "clipboard-write" }
+        //     //{ name: "clipboard-read",  allowWithoutGesture: false },
+        //   //{ name: "clipboard-read",  allowWithoutGesture: true  },
+        //   //{ name: "clipboard-write", allowWithoutGesture: false },
+        //   //{ name: "clipboard-write", allowWithoutGesture: true  }
+        // ];
+        
+        // /** Query for each permission's state, then watch for changes and update buttons accordingly: */
+        // Promise.all(
+        //     PERMISSIONS.map( descriptor => navigator.permissions.query(descriptor) )
+        // ).then( permissions => {
+        //   permissions.forEach( (status, index) => {
+        //     let descriptor = PERMISSIONS[index],
+        //         name = permissionName(descriptor),
+        //         btn = document.createElement('button');
+        //     btn.title = 'Click to request permission';
+        //     btn.textContent = name;
+        //     // Clicking a button (re-)requests that permission:
+        //     btn.onclick = () => {
+        //       navigator.permissions.request(descriptor)
+        //         .then( status => { log(`Permission ${status.state}.`); })
+        //         .catch( err => { log(`Permission denied: ${err}`); });
+        //     };
+        //     // If the permission status changes, update the button to show it
+        //     status.onchange = () => {
+        //       btn.setAttribute('data-state', status.state);
+        //     };
+        //     status.onchange();
+        //     permbuttons.appendChild(btn);
+        //   });
+        // });
+        
+        
+        
+        // function permissionName(permission) {
+        //     let name = permission.name.split('-').pop();
+        //   if ('allowWithoutGesture' in permission) {
+        //       name += ' ' + (permission.allowWithoutGesture ? '(without gesture)' : '(with gesture)');
+        //   }
+        //   return name;
+        // }
+        
+        
+        function log(value) {
+          //clearTimeout(log.timer);
+        //   if (toast.hidden) toast.textContent = value;
+        toast.textContent = value;
+        // else
+          toast.textContent += '\n' + value;
+            toast.className = String(value).match(/error/i) ? 'error' : '';
+          toast.hidden = false;
+          //log.timer = setTimeout( () => { toast.hidden = true; }, 3000);
+        }
+</script>
+</html>
